@@ -184,9 +184,119 @@ Symbol String -> Data Accessor
   - a[o] = 1
 转换规则
 
-|-|-|
-|12|123|
+Object  -> Number valueOf
+object -> string valueOf toString
+
+### Unboxing 拆箱转换
+- ToPrimitive
+- toString vs valueOf(+)
+- Symbol.toPrimitive
+### Boxing 装箱转换
+包装类(Null Undefined没有)
+
+- Number类和Number不一样 会自动进行装箱
   
+#### Statement
+- Completion Record 是否返回返回了什么
+```js
+if(x==1){
+    return 10
+}
+```
+- [[type]] normal break continue return or throw
+- [[value]] 基本类型
+- [[target]] label (break continue)
+
+#### 简单语句
+- ExpressionStatement
+- EmptyStatement
+- DebuggerStatement
+- ThrowStatement
+- ContinueStatement
+- BreakStatement
+- ReturnStatement
+
+#### 复合语句
+- Block  { xxx } [[type]] Normal
+- If
+- Switch
+- Iteration
+  - while()
+  - do xxx while()
+  - for(x;x;x)    let 是不同的作用域
+  - for(x in x)
+  - for(x of x)
+  - for await (of)
+- With
+- Labelled
+- Try   
+  - try{}catch(e){}finally{}
+
+### 声明
+- FunctionDeclaration 声明提升
+  - function 
+  - function * 
+  - async function
+  - async function *
+  - var     赋值没有提升
+  声明前会报错
+  - class
+  - const
+  - let
+- 预处理 pre-process
+```js
+// 都会有预处理，只不过const声明在之前会报错
+var a = 2
+void function (){
+    a = 1
+  return 
+  var a
+}()
+
+console.log(a) // 2
+// =========== const
+
+var a = 2
+void function (){
+  a = 1
+  return
+  var a
+}()
+
+console.log(a) // 2
+
+```
+- Generator-
+- AsyncFunction-
+- AsyncGenerator-
+- VariableStatement
+- ClassDeclaration
+- Lexical-
+
+- 作用域链
+```js
+var a = 2
+void function (){
+    a = 1
+  {
+      var a;
+  }
+}()
+// 仅在块级作用域
+var a = 2
+void function (){
+  a = 1
+  {
+    const a;
+  }
+}()
+
+```
+
+
+
+
+
 - Reference
 
 
