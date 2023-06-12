@@ -21,7 +21,7 @@ class Request {
         }
         this.headers['Content-Type'] = this.bodyText.length
     }
-
+/** 2.发送 */
     send(connection){
         return new Promise((resolve, reject)=>{
             const parser = new ResponseParser
@@ -59,9 +59,27 @@ class Request {
         return `${this.method} ${this.path} HTTP/1.1\r\n ${Object.keys(this.headers).map(key=>`${key}:${this.headers[key]}`).join('\r\n')}\r\n${this.bodyText}`
     }
 }
-
+/** 3. 响应解析 状态机 */
 class ResponseParser{
     constructor() {
+        // 定义状态机 常量if的写法
+        this.WAITING_STATUS_LINE = 0
+        this.WAITING_STATUS_LINE_END = 1
+        this.WAITING_HEADER_NAME = 2
+        this.WAITING_HEADER_SPACE = 3
+        this.WAITING_HEADER_VALUE = 4
+        this.WAITING_HEADER_LINE_END = 5
+        this.WAITING_HEADER_BLOCK_END = 6
+        this.WAITING_BODY = 7
+        // 存储解析过程结果
+        this.current = this.WAITING_STATUS_LINE // 当前状态 初始
+        this.statusLine = "" //
+        this.headers = {}
+        this.headerName = ""
+        this.headerValue = ""
+        this.bodyParser = null
+
+
     }
     /** 接受处理不同的字符 */
     receive(string){
@@ -71,11 +89,52 @@ class ResponseParser{
     }
     // 有限状态机的实现
     receiveChar(char){
-
+        if(this.current===this.WAITING_STATUS_LINE){
+            if(char==='\r'){
+                this.current = this.WAITING_STATUS_LINE_END
+            }else{
+                this.statusLine += char
+            }
+        }else if(this.current===this.WAITING_STATUS_LINE_END){
+            if(char==='\n'){
+                this.current = this.WAITING_HEADER_NAME
+            }
+        }else if(this.current===this.WAITING_HEADER_NAME){
+            if(char===':'){
+                this.current = this.WAITING_HEADER_SPACE
+            }else if(char==='\r'){
+                this.current = this.WAITING_HEADER_BLOCK_END
+            }else {
+                this.headerName+= char
+            }
+        }else if(this.current===this.WAITING_HEADER_SPACE){
+            if(char===' '){
+                this.current= this.WAITING_HEADER_VALUE
+            }
+        }else if(this.current===this.WAITING_HEADER_VALUE){
+            if(char==='\r'){
+                this.current = this.WAITING_HEADER_LINE_END
+                this.headers[this.headerName] = this.headerValue
+                this.headerName = ""
+                this.headerValue = ""
+            }else{
+                this.headerValue += char
+            }
+        }else if(this.current===this.WAITING_HEADER_LINE_END){
+            if(char==='\n'){
+                this.current = this.WAITING_HEADER_NAME
+            }
+        }else if(this.current===this.WAITING_HEADER_BLOCK_END){
+            if(char==='\n'){
+                this.current = this.WAITING_BODY
+            }
+        }else if(this.current === this.WAITING_BODY){
+            console.log(char)
+        }
     }
 }
 
-
+/** 1，请求 */
 void async function () {
     let request = new Request({
         method: 'post',

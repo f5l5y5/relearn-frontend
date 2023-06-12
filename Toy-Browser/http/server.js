@@ -9,7 +9,7 @@ http.createServer((reqest,response)=>{
     }).on('end',()=>{
         body = Buffer.concat(body).toString()
         console.log('body',body)
-        response.writeHead(200,{'Content-Type':'text/html'})
+        response.writeHead(200,{'Content-Type':'application/x-www-form-urlencoded'})
         response.end('hello,world\n')
 
     })
