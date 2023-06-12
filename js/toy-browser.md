@@ -208,3 +208,45 @@ function foundB2(c) {
 
 
 ```
+
+
+## HTTP 协议解析
+![image.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a0174d659cbe456aa898ee4f2d42afb2~tplv-k3u1fbpfcp-watermark.image?)
+不能使用http包，使用net包
+
+### TCP/IP基础
+
+- 流
+- 端口
+- require('net)
+
+- 包
+- IP地址
+- libnet/libpcap
+
+### HTTP
+- Request
+- Response
+
+## 实现过程
+
+### 0环境搭建
+\r \n 结尾
+
+1. 实现一个http请求
+
+- 设计一个请求类
+- content-type content-length
+- body
+- 不同的content-type 影响body格式
+
+2. send函数
+- 在Request的构造器中收集必要的信息
+- 设计一个send函数，发送到服务器
+
+3. 发送请求
+- 支持已有和新建的connection
+- 收到数据传parser
+- 根据parser状态resolve 
+
+4. response的解析
