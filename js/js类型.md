@@ -293,8 +293,37 @@ void function (){
 
 ```
 
+### 宏任务微任务
+JS执行粒度（运行时）
+- 宏任务
+- 微任务（Promise）
+- 函数调用（Execution Context）
+- 语句/声明  （Completion Record）
+- 表达式 （Reference）
+- 直接量/变量/this...
+
+```js
+// 有宏任务 ，事件循环，在下一个宏任务前调用微任务
+var x = 1
+var p = new Promise(function (resolve) { 
+    resolve()
+})
+
+p.then(()=>x=3)
+x=2 
 
 
+```
+
+### 函数调用
+保存执行上下文栈中 Running Execution Context
+- code evaluation state =>async generator
+- Function  -> Closure
+- Script or Module
+- Generator 每次执行生成的
+- Realm   -> 对象的原型需要记录
+- LexicalEnvironment
+- VariableEnvironment
 
 
 - Reference
