@@ -1,8 +1,50 @@
 const EOF = Symbol("EOF") // end of line 结束状态
 let currentToken = null // 存储当前的token 
-
-/** 收集构造token  */
+let currentAttribute = null
+let currentTextNode = null
+/** 收集构造token token构建dom  */
+let stack = [{type:'document',children:[]}]
+/** 思路是：使用栈，遇到开始标签入栈，遇到结束标签出栈，让元素放入stack的dom中 */
 function emit(token) {
+	let top = stack[stack.length-1] // 取出栈顶元素
+	if(token.type==='startTag'){
+		let element = {
+			type:'element',
+			children:[],
+			attributes:[]
+		}
+		element.tagName = token.tagName
+		for (let p in token) {
+			if(p!=="type"&&p!=="tagName"){
+				element.attributes.push({
+					name:p,
+					value:token[p]
+				})
+			}
+		}
+		top.children.push(element)
+		element.parent = top
+		if(!token.isSelfClosing){
+			stack.push(element)
+		}
+		currentTextNode = null
+	}else if(token.type==='endTag'){
+		if(top.tagName!==token.tagName){
+			throw new Error('Tag start end doesn\'t match')
+		}else {
+			stack.pop()
+		}
+		currentTextNode = null
+	}else if(token.type==='text'){
+		if(currentTextNode===null){
+			currentTextNode = {
+				type:'text',
+				content:''
+			}
+			top.children.push(currentTextNode)
+		}
+		currentTextNode.content += token.content
+	}
 	console.log(token);
 }
 
@@ -136,6 +178,22 @@ function doubleQuotedAttributeValue(c) {
 	}
 }
 
+function afterQuotedAttributeValue(c) {
+	if (c.match(/^[\t\n\f ]$/)) {
+		return beforeAttributeName;
+	} else if (c === "/") {
+		return selfClosingStartTag;
+	} else if (c === ">") {
+		currentToken[currentAttribute.name] = currentAttribute.value;
+		emit(currentToken);
+		return data;
+	} else if (c === EOF) {
+	} else {
+		currentAttribute.value += c;
+		return doubleQuotedAttributeValue;
+	}
+}
+
 function singleQuotedAttributeValue(c) {
 	if (c === "'") {
 		currentToken[currentAttribute.name] = currentAttribute.value
@@ -156,7 +214,6 @@ function UnQuotedAttributeValue(c) {
 		currentToken[currentAttribute.name] = currentAttribute.value
 		return beforeAttributeName
 	} else if (c === '/') {
-		
 		currentToken[currentAttribute.name] = currentAttribute.value
 		return selfClosingStartTag
 	} else if (c === '>') {
@@ -165,9 +222,38 @@ function UnQuotedAttributeValue(c) {
 		return data
 	} else if (c === '\u0000') {
 		
-	}else if(c==="\""||c==="'"||c==="<")
+	}else if(c==="\""||c==="'"||c==="<"||c==='='||c==="`"){
+
+	}else if(c===EOF){
+
+	}else{
+		currentAttribute.value += c
+		return UnQuotedAttributeValue
+	}
 }
 
+
+function afterAttributeName(c) {
+	if (c.match(/^[\t\n\f ]$/)) {
+		return afterAttributeName;
+	} else if (c === "/") {
+		return selfClosingStartTag;
+	} else if (c === "=") {
+		return beforeAttributeValue;
+	} else if (c === ">") {
+		currentToken[currentAttribute.name] = currentAttribute.value;
+		emit(currentToken);
+		return data;
+	} else if (c === EOF) {
+	} else {
+		currentToken[currentAttribute.name] = currentToken.value;
+		currentAttribute = {
+			name: "",
+			value: "",
+		};
+		return attributeName(c);
+	}
+}
 
 
 function selfClosingStartTag(c) {
@@ -193,4 +279,5 @@ module.exports.parseHTML = function parseHTML(html){
     }
     state = state(EOF)
     console.log('html',html)
+	console.log(stack[0])
 }
