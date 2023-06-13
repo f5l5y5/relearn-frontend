@@ -233,7 +233,7 @@ function foundB2(c) {
 ### 0环境搭建
 \r \n 结尾
 
-1. 实现一个http请求
+### 1. 实现一个http请求
 
 - 设计一个请求类
 - content-type content-length
@@ -249,4 +249,30 @@ function foundB2(c) {
 - 收到数据传parser
 - 根据parser状态resolve 
 
-4. response的解析
+4. responseParser的解析
+- 分段构造需要用ResponseParser装配
+- 分段处理ResponseText 用状态机分析文本结构
+5. BodyParser总结
+- Response的body可能根据Content-Type有不同的结构，因此需要采用子parser结构解决问题
+- TrunkedBodyParser，使用同样的状态机处理body格式
+
+### 2. HTML解析
+[html状态机](https://html.spec.whatwg.org/multipage/parsing.html#rcdata-state)
+
+1. 文件拆分 
+
+- parser.js 接受html文本作为参数。 
+- 生成dom树
+
+
+2. FSM实现HTML分析
+词法、语法解析
+- FSM 实现html分析
+- html标准中，已经规定了html状态
+- 完成最简单版本
+
+3. 解析标签
+- 开始标签 结束标签 自闭合标签
+- 忽略所有属性
+
+4. 创建元素
