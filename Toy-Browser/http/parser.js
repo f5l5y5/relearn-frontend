@@ -1,9 +1,60 @@
+const css = require('css') // 处理css内容
 const EOF = Symbol('EOF') // end of line 结束状态
 
 
 let currentToken = null // 当前的token
 let currentAttribute = null // 当前属性
 let currentTextNode = null // 文本节点
+let rules = [] // css规则
+/** 添加css规则 */
+function addCSSRules(text) {
+	let ast = css.parse(text)
+	console.log('打印***ast', JSON.stringify(ast, null, "      "))
+	rules.push(...ast.stylesheet.rules)
+}
+
+/** 匹配函数 */
+function match(element, selector) {
+	
+}
+
+
+/** 计算css */
+function computeCSS(element) {
+	let elements = stack.slice().reverse() // 获取父元素 避免污染，reverse是要在父元素找
+	// 判断是否有
+	if (!element.computedStyle) {
+		element.computedStyle = {}
+	}
+
+	for (let rule of rules) {
+		let selectorParts = rule.selectors[0].split(" ").reverse() // 找到最后面的选择器进行匹配
+
+		if (!match(element, selectorParts[0]))
+			continue
+		
+		let matched = false
+
+		let j = 1 // 选择器的位置   [div img #myid] [{element}]
+		for (let i = 0; i < elements.length; i++) {
+			if (match(elements[i], selectorParts[i])) {
+				j++
+			}
+		}
+
+		if (j >= selectorParts.length) {
+			matched = true
+		}
+
+		if (matched) {
+			// 如果匹配上 假如
+			console.log('element',element,'rule',rule);
+		}
+
+		
+	}
+}
+
 
 
 /** 收集构造token token构建dom  */
@@ -29,6 +80,12 @@ function emit(token) {
 				})
 			}
 		}
+
+
+		// 在startTag时计算css
+		computeCSS(element)
+
+
 		top.children.push(element)
 		// element.parent = top
 		if (!token.isSelfClosing) {
@@ -39,6 +96,11 @@ function emit(token) {
 		if (top.tagName !== token.tagName) {
 			throw new Error("Tag start end doesn't match")
 		} else {
+			/** ============    style结束标签，执行添加css规则的操作  ===================== */
+			if (top.tagName === 'style') {
+				addCSSRules(top.children[0].content)
+			}
+
 			stack.pop()
 		}
 		currentTextNode = null
