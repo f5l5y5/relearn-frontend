@@ -350,3 +350,10 @@ Cross: height y top bottom
 flex-direction：column
 Cross: width x left right
 Main: height y top bottom
+
+1. 准备工作
+- direction wrap 的工作抽象
+
+2. 收集元素进`行`
+
+![image.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/482e1362a4604f02a503a492841b2053~tplv-k3u1fbpfcp-watermark.image?)
