@@ -227,5 +227,5 @@ void async function () {
     let response = await request.send()
     // 采用全部接受，应该是分段处理
     let dom = parser.parseHTML(response.body)
-    // console.log(response)
+		console.log('打印***dom',dom)
 }()

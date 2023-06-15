@@ -1,6 +1,6 @@
 const css = require('css') // 处理css内容
 const EOF = Symbol('EOF') // end of line 结束状态
-
+const layout = require('./layout.js')
 
 let currentToken = null // 当前的token
 let currentAttribute = null // 当前属性
@@ -9,15 +9,66 @@ let rules = [] // css规则
 /** 添加css规则 */
 function addCSSRules(text) {
 	let ast = css.parse(text)
-	console.log('打印***ast', JSON.stringify(ast, null, "      "))
+	console.log('打印***ast', JSON.stringify(ast, null, '      '))
 	rules.push(...ast.stylesheet.rules)
 }
 
-/** 匹配函数 */
-function match(element, selector) {
-	
+/** 处理选择器优先级 */
+function specificity(selector) {
+	let p = [0, 0, 0, 0]
+	let selectorParts = selector.split(" ")
+	for (let part of selectorParts) {
+		if (part.charAt(0) === '#') {
+			p[1]+=1
+		}else if (part.charAt(0) === '.') {
+			p[2]+=1
+		} else {
+			p[3]+=1
+		}
+	}
+	return p
 }
 
+/** 比较选择器优先级 */
+function compare(sp1, sp2) {
+	if (sp1[0] - sp2[0]) {
+		return sp1[0]-sp2[0]
+	}
+	if (sp1[1] - sp2[1]) {
+		return sp1[1]-sp2[1]
+	}
+	if (sp1[2] - sp2[2]) {
+		return sp1[2]-sp2[2]
+	}
+	return sp1[3] - sp2[3]
+}
+
+
+
+
+/** 匹配函数 . # tagName */
+function match(element, selector) {
+	if (!selector || !element.attributes) {
+		return false
+	}
+	if (selector.charAt(0) === '#') {
+		let attr = element.attributes.filter(attr => attr.name === 'id')[0]
+		if (attr && attr.value === selector.replace('#', '')) {
+			return true
+		}
+	}else if (selector.charAt(0) === '.') {
+		let attr = element.attributes.filter(attr => attr.name === 'class')[0]
+		if (attr && attr.value === selector.replace('.', '')) {
+			return true
+		}
+	} else {
+		if (element.tagName === selector) {
+			return true
+		}
+	}
+
+	return false
+}
 
 /** 计算css */
 function computeCSS(element) {
@@ -28,11 +79,10 @@ function computeCSS(element) {
 	}
 
 	for (let rule of rules) {
-		let selectorParts = rule.selectors[0].split(" ").reverse() // 找到最后面的选择器进行匹配
+		let selectorParts = rule.selectors[0].split(' ').reverse() // 找到最后面的选择器进行匹配
 
-		if (!match(element, selectorParts[0]))
-			continue
-		
+		if (!match(element, selectorParts[0])) continue
+
 		let matched = false
 
 		let j = 1 // 选择器的位置   [div img #myid] [{element}]
@@ -47,15 +97,31 @@ function computeCSS(element) {
 		}
 
 		if (matched) {
-			// 如果匹配上 假如
-			console.log('element',element,'rule',rule);
-		}
+			let sp = specificity(rule.selectors[0])
 
-		
+			// 如果匹配上 假如
+			let computedStyle = element.computedStyle
+
+			for (const declaration of rule.declarations) {
+				if (!computedStyle[declaration.property]) {
+					computedStyle[declaration.property] = {}
+				}
+				// 比较specificity 
+				if (!computedStyle[declaration.property].specificity) {
+					computedStyle[declaration.property].value = declaration.value
+					computedStyle[declaration.property].specificity = sp
+					
+				} else if (compare(computedStyle[declaration.property].specificity, sp) < 0) {
+					// 旧的更小，新的需要覆盖
+						computedStyle[declaration.property].value = declaration.value
+						computedStyle[declaration.property].specificity = sp
+				}
+
+			}
+			console.log('打印***computedStyle',computedStyle)
+		}
 	}
 }
-
-
 
 /** 收集构造token token构建dom  */
 let stack = [{ type: 'document', children: [] }]
@@ -81,10 +147,8 @@ function emit(token) {
 			}
 		}
 
-
 		// 在startTag时计算css
 		computeCSS(element)
-
 
 		top.children.push(element)
 		// element.parent = top
@@ -147,7 +211,7 @@ function tagOpen(c) {
 	} else {
 		emit({
 			type: 'text',
-			content:c
+			content: c
 		})
 	}
 }
@@ -237,7 +301,6 @@ function doubleQuotedAttributeValue(c) {
 		return doubleQuotedAttributeValue
 	}
 }
-
 
 function singleQuotedAttributeValue(c) {
 	if (c === "'") {

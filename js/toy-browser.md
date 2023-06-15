@@ -321,3 +321,32 @@ function foundB2(c) {
 处理简单选择器 
 - 选择器也需要向外排列
 - 复杂选择器拆成针对单个元素的选择器，用循环匹配父元素队列
+
+5. 选择器与元素选择器匹配
+
+- 根据选择器的类型和元素属性 计算是否与当前元素匹配
+- 仅仅实现三种基本选择器
+
+6. 计算属性生成
+
+- 一旦选择匹配 应用选择器到元素上，形成computedStyle
+
+7. 选择器优先级处理specificity
+四元组
+[0       0        0           0 ]
+style    id     class        tagName
+
+- css规则根据specificity和后来优先覆盖
+- specificity是一个四元组 左边权限高
+- -个css规则的specificity根据包含的简单选择器相加而成
+
+### 4. layout排版
+
+主轴 副轴
+flex-direction：row
+Main: width x left right
+Cross: height y top bottom
+
+flex-direction：column
+Cross: width x left right
+Main: height y top bottom
