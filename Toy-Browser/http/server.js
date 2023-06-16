@@ -1,8 +1,3 @@
-
-
-
-
-
 const http = require('http')
 
 http.createServer((req, res) => {
@@ -49,4 +44,4 @@ http.createServer((req, res) => {
 			)
 		})
 }).listen('8088')
-console.log('server started on http://localhost:8088')
+console.log('server started')

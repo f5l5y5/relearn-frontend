@@ -357,3 +357,15 @@ Main: height y top bottom
 2. 收集元素进`行`
 
 ![image.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/482e1362a4604f02a503a492841b2053~tplv-k3u1fbpfcp-watermark.image?)
+
+
+### 渲染
+
+1. 环境
+- 图形环境
+- npm i images
+
+2. 渲染
+- 递归调用子元素绘制方法完成dom树绘制
+- 忽略不需要绘制的节点
+

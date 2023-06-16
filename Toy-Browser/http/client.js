@@ -1,6 +1,7 @@
 const net = require('net')
 const parser = require('./parser.js')
-
+const render = require('./render.js')
+const images = require('images')
 /** 初始化options请求参数 */
 class Request {
     constructor(options) {
@@ -225,7 +226,11 @@ void async function () {
     })
 
     let response = await request.send()
-    // 采用全部接受，应该是分段处理
-    let dom = parser.parseHTML(response.body)
-		console.log('打印***dom',dom)
+    // 采用全部接受，应该是分段处理 解析dom 生成带css的dom树
+	let dom = parser.parseHTML(response.body)
+	console.log('打印***dom',dom)
+	// 渲染使用images库
+	let viewport = images(800, 600)
+	render(viewport, dom)
+	viewport.save('viewport.jpg')
 }()

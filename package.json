@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/f5l5y5/relearn-frontend#readme",
   "dependencies": {
-    "css": "^3.0.0"
+    "css": "^3.0.0",
+    "images": "^3.2.3"
   }
 }
